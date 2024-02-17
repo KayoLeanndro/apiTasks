@@ -36,15 +36,14 @@ namespace apiTasks.Controllers
         [HttpDelete]
         public IActionResult DeleteTask(int id)
         {
-            var idTask = _context.TaskToMades.Find(id);
+            var tarefaBanco = _context.TaskToMades.Find(id);
 
-            if (idTask == null)
-                return BadRequest(new { Error = "This Id doesn't exist in our database." });
+            if (tarefaBanco == null)
+                return NotFound();
 
-            _context.TaskToMades.Remove(idTask);
+            _context.TaskToMades.Remove(tarefaBanco);
             _context.SaveChanges();
-
-            return Ok(idTask);
+            return NoContent();
         }
 
 
@@ -106,12 +105,26 @@ namespace apiTasks.Controllers
             return Ok(tarefa);
         }
 
-        // [HttpGet("ObterPorStatus")]
+        [HttpGet("ObterPorStatus")]
 
-        // public IActionResult ObterPorStatus(TaskStatus status)
-        // {
-           
-        // }
+        public IActionResult ObterPorStatus(TaskStatus status)
+        {
+        try
+            {
+                var tarefas = _context.TaskToMades.Where(x => x.TaskStatus == x.TaskStatus).ToList();
+
+                if (tarefas == null || tarefas.Count == 0)
+                {
+                    return NotFound("Nenhuma tarefa encontrada com o status especificado.");
+                }
+
+                return Ok(tarefas);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ocorreu um erro ao processar a solicitação: {ex.Message}");
+            }
+        }
 
 
 
