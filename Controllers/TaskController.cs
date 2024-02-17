@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using apiTasks.Context;
+using apiTasks.Enums;
 using apiTasks.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,8 +13,8 @@ namespace apiTasks.Controllers
     [Route("[Controller]")]
     public class TaskController : ControllerBase
     {
-         private readonly ContextDB _context;
-         
+        private readonly ContextDB _context;
+
         public TaskController(ContextDB context)
         {
             _context = context;
@@ -22,14 +23,14 @@ namespace apiTasks.Controllers
         [HttpPost]
         public IActionResult AddTask(TaskToMade task)
         {
-           if(task.Date == DateTime.MinValue)
-            return BadRequest(new{Erro = "Date can't be null"});
+            if (task.Date == DateTime.MinValue)
+                return BadRequest(new { Erro = "Date can't be null" });
 
             _context.TaskToMades.Add(task);
             _context.SaveChanges();
 
-    
-          return CreatedAtAction(nameof(ObterPorId), new { id = task.Id }, task);
+
+            return CreatedAtAction(nameof(ObterPorId), new { id = task.Id }, task);
         }
 
         [HttpDelete]
@@ -37,8 +38,8 @@ namespace apiTasks.Controllers
         {
             var idTask = _context.TaskToMades.Find(id);
 
-            if(idTask == null)
-            return BadRequest(new{Error = "This Id doesn't exist in our database." });
+            if (idTask == null)
+                return BadRequest(new { Error = "This Id doesn't exist in our database." });
 
             _context.TaskToMades.Remove(idTask);
             _context.SaveChanges();
@@ -47,28 +48,18 @@ namespace apiTasks.Controllers
         }
 
 
-        [HttpGet("{id}")]
-        public IActionResult ObterPorId(int id)
-        {
-            var idTask = _context.TaskToMades.Find(id);
-            
-            if(idTask == null)
-                return NotFound();
-
-            return Ok(idTask);
-        }
 
         [HttpPut("{id}")]
         public IActionResult AtualizarTarefa(int id, TaskToMade task)
         {
             var idTask = _context.TaskToMades.Find(id);
 
-            if(idTask == null)
-                return  NotFound();
+            if (idTask == null)
+                return NotFound();
 
             if (idTask.Date == DateTime.MinValue)
                 return BadRequest(new { Erro = "A data da tarefa não pode ser vazia" });
- 
+
             idTask.Title = task.Title;
             idTask.Description = task.Description;
             idTask.Date = task.Date;
@@ -79,6 +70,50 @@ namespace apiTasks.Controllers
             return Ok();
         }
 
-        
+        [HttpGet("{id}")]
+        public IActionResult ObterPorId(int id)
+        {
+            var idTask = _context.TaskToMades.Find(id);
+
+            if (idTask == null)
+                return NotFound();
+
+            return Ok(idTask);
+        }
+
+        [HttpGet("ObterTodos")]
+
+        public IActionResult ObterTodos()
+        {
+            var taskList = _context.TaskToMades.ToList();
+
+            return Ok(taskList);
+        }
+
+        [HttpGet("ObterPorTitulo")]
+        public IActionResult obterPorTitulo(string title)
+        {
+            var taskTittle = _context.TaskToMades.Where(t => t.Title.Contains(title)).ToList();
+
+            return Ok(taskTittle);
+        }
+
+        [HttpGet("ObterPorData")]
+
+        public IActionResult ObterPorData(DateTime date)
+        {
+            var tarefa = _context.TaskToMades.Where(t => t.Date.Date == date.Date);
+            return Ok(tarefa);
+        }
+
+        // [HttpGet("ObterPorStatus")]
+
+        // public IActionResult ObterPorStatus(TaskStatus status)
+        // {
+           
+        // }
+
+
+
     }
 }
